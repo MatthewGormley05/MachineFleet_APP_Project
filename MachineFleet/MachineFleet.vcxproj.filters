@@ -18,8 +18,5 @@
     <ClCompile Include="FleetDatabase.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lab6.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
