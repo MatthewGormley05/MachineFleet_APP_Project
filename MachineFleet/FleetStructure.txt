@@ -1,0 +1,6 @@
+stat1 stat2 stat3 stat4 stat5 stat6
+chassisNum, machineryMake, machineryModel, year, cost, currentValue, currentMileage, nextServiceMile, owner, email, phone, machineType, breakdownNum
+
+examples:
+
+1 Caterpillar 320D 2005 25000 20000 15000 20000 HarryBiggs harrybiggs123@gmail.com 0871234567 1 0

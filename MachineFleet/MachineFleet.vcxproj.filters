@@ -19,4 +19,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="users.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="fleet.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab6.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab5_StartEndListLengthSearch_Solution.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab4_LoginLoad_Solution3.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab3_AddEditBook_Solution.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab2_EmployeesDetails_Solution.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Lab1_DailySalesLoading_Solution.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="FleetStructure.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
