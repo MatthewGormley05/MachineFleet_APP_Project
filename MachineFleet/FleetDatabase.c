@@ -6,7 +6,7 @@
 
 typedef struct machine
 {
-	char chassisNum[20]; //Unique
+	int chassisNum; //Unique
 	char machineryMake[20];
 	char machineryModel[20];
 	int year; //Must be 4 nums, 1950 - 2025
@@ -16,7 +16,7 @@ typedef struct machine
 	double nextServiceMile;
 	char owner[30];
 	char email[30];
-	int phone[10];
+	int phone;
 	int machineType; //1 = Tractor, 2 = Excavator, 3 = Roller, 4 = Crane, 5 = Mixer
 	int breakdownNum; //1 = never, 2 = <3, 3 = <5, 4 = >5
 	struct node* NEXT;
@@ -33,10 +33,11 @@ int addLastMachine(machineT** end);
 int addMachine(machineT* top, int pos);
 int displayAll(machineT* top);
 int displayStats(machineT* top, int machineType);
-int displayStats(machineT* top, int machineType);
 void listAll(machineT* top);
 int displayMachine(machineT* top, int searchTerm);
 int updateMachine(machineT* top, int searchTerm);
+void deleteMachine(machineT** top, machineT** end, int searchTerm);
+void deleteTopMachine(machineT** top, machineT** end);
 void deleteMachine(machineT** top, machineT** end, int searchTerm);
 
 
@@ -48,9 +49,8 @@ void main()
 	machineT* prev = NULL;
 
 	bool chassisTaken = false;
-	int option = -10, loginMode, machineType, newChassisNum;
+	int option = -10, loginMode, machineType, chassisInput;
 	char machineOption[1], a[1] = "a", b[1] = "b", c[1] = "c", d[1] = "d", e[1] = "e", A[1] = "A", B[1] = "B", C[1] = "C", D[1] = "D", E[1] = "E";
-	char chassisInput[20] = "\0";
 	char emptyString = "\0";
 
 	//loadAll();//Load Files
@@ -67,36 +67,58 @@ void main()
 			machineOption;
 			machineType = 0;
 			chassisTaken = false;
-			newChassisNum = NULL;
-			strcpy(chassisInput, emptyString);
+			chassisInput = 0;
 
 			//Option 1: Add machine
 			if (option == 1)
 			{
 				printf("\nPlease enter the chassis number of the new machine: ");
-				scanf("%d", newChassisNum);
+				scanf("%d", &chassisInput);
 
-				chassisTaken = checkChassis(headPtr, newChassisNum);
+				chassisTaken = checkChassis(headPtr, chassisInput);
 
+				/*
 				if (chassisTaken == false)
+					printf("\nChassis Number is free.");
+				else
+					printf("\nChassis Number is taken.");
+					*/
+
+				
+				if (chassisTaken == false || chassisInput > 0)
 				{
-					if (newChassisNum == 1)
+					printf("\nChassis Number is free.\n");
+
+					if (chassisInput == 1)
+					{
+						printf("\nAdding machine at position 1.\n");
 						addFirstMachine(&headPtr, &tailPtr);
+					}
 					
-					else if (newChassisNum == length(headPtr) + 1)
+					else if (chassisInput == length(headPtr) + 1)
+					{
+						printf("\nAdding machine at last position.\n");
 						addLastMachine(&tailPtr);
+					}
 					
-					else if (newChassisNum<1 || newChassisNum> length(headPtr) + 1)
+					else if (chassisInput<1 || chassisInput> length(headPtr) + 1)
 						printf("Invalid Chassis number\n");
 
 					else
-						addMachine(headPtr, newChassisNum);
+						printf("\nAdding machine at position %d.\n", chassisInput);
+						addMachine(headPtr, chassisInput);
+				}
+
+				else if (chassisInput <= 0)
+				{
+					printf("Chassis Number too low.");
 				}
 
 				else 
 				{
 					printf("Chassis Number already taken.");
 				}
+				
 			}
 
 			//Option 2: Display all machines to screen
@@ -109,21 +131,23 @@ void main()
 			else if (option == 3 && loginMode == 2)
 			{
 				printf("\nPlease enter the chassis number: ");
-				scanf("%s", chassisInput);
+				scanf("%d", &chassisInput);
 			}
 
 			//Option 4: Update a machine's details (ADMIN)
 			else if (option == 4 && loginMode == 2)
 			{
 				printf("\nPlease enter the chassis number: ");
-				scanf("%s", chassisInput);
+				scanf("%d", &chassisInput);
+
+				updateMachine(headPtr, chassisInput);
 			}
 
 			//Option 5: Delete machine
 			else if (option == 5)
 			{
 				printf("\nPlease enter the chassis number: ");
-				scanf("%s", chassisInput);
+				scanf("%d", &chassisInput);
 			}
 
 			//Option 6: Generate statistics (a - d) based on machinery type
@@ -239,14 +263,6 @@ int userLogin()
 	char username1[20], username2[20], adminName[20];
 	char password1[7], password2[7], adminPassword[7]; //Each password is 6 characters
 	char usernameInput[20], passwordInput[20];
-
-	//int loginTesting = 1;//Testing
-	//strcpy(username1, "Bethany"); //Testing
-	//strcpy(username2, "Alexander"); //Testing
-	//strcpy(adminName, "admin"); //Testing
-	//strcpy(password1, "Beth12"); //Testing
-	//strcpy(password2, "alex54"); //Testing
-	//strcpy(adminPassword, "admin1"); //Testing
 
 	//Open the logins file and feed them to the variables
 	FILE* fp;
@@ -430,9 +446,113 @@ int addMachine(machineT* top, int pos)
 	machineT* temp, * temp2;
 	machineT* newMachine;
 
+	bool validInput = false;
+	int chassisNum = pos;
+
 	newMachine = (machineT*)malloc(sizeof(machineT));
-	printf("Please enter the data for the new node\n");
-	//scanf("%d", &newNode->data);
+
+	validInput = false;
+	
+	(newMachine)->chassisNum = chassisNum;
+
+	printf("\nEnter the machinery make: ");
+	scanf("%s", (newMachine)->machineryMake);
+
+	printf("\nEnter the machinery model: ");
+	scanf("%s", (newMachine)->machineryModel);
+
+	while (validInput == false)
+	{
+		printf("\nEnter the year of manufacture: ");
+		scanf("%d", &(newMachine)->year);
+		if ((newMachine)->year >= 1950 && (newMachine)->year <= 2025)
+		{
+			validInput = true;
+		}
+
+		else
+		{
+			printf("\nInvalid year, please try again.");
+		}
+	}
+
+	printf("\nEnter the cost: ");
+	scanf("%f", &(newMachine)->cost);
+
+	printf("\nEnter the current valuation: ");
+	scanf("%f", &(newMachine)->currentValue);
+
+	printf("\nEnter the current mileage: ");
+	scanf("%f", &(newMachine)->currentMileage);
+
+	printf("\nEnter the next service mileage: ");
+	scanf("%f", &(newMachine)->nextServiceMile);
+
+	validInput = false;
+	while (validInput == false)
+	{
+		printf("\nEnter the owner name (no spaces): ");
+		scanf("%s", (newMachine)->owner);
+
+		if (strstr((newMachine)->owner, " ") != NULL)
+			printf("\nInvalid input, please do not include spaces.");
+
+		else
+			validInput = true;
+	}
+
+	validInput = false;
+	while (validInput == false)
+	{
+		printf("\nEnter the owner email address: ");
+		scanf("%s", (newMachine)->email);
+
+		//https://stackoverflow.com/questions/15098936/simple-way-to-check-if-a-string-contains-another-string-in-c
+		if (strstr((newMachine)->email, "@") != NULL && strstr((newMachine)->email, ".com") != NULL)
+			validInput = true;
+
+		else
+			printf("\nInvalid input, please use @ and .com in the address");
+	}
+
+	validInput = false;
+	while (validInput == false)
+	{
+		printf("\nEnter the owner phone number: ");
+		scanf("%d", &(newMachine)->phone);
+
+		if ((newMachine)->phone >= 1000000000 && (newMachine)->phone <= 9999999999)
+			validInput = true;
+
+		else
+			printf("\nPlease enter a valid phone number.");
+	}
+
+	validInput = false;
+	while (validInput == false)
+	{
+		printf("\nEnter the machine type (1 = Tractor, 2 = Excavator, 3 = Roller, 4 = Crane, 5 = Mixer): ");
+		scanf("%d", &(newMachine)->machineType);
+
+		if ((newMachine)->machineType > 0 && (newMachine)->machineType < 6)
+			validInput = true;
+
+		else
+			printf("\nPlease enter a valid machine type.");
+	}
+
+	validInput = false;
+	while (validInput == false)
+	{
+		printf("\nEnter the machine breakdowns this year (1 = never, 2 = <3, 3 = <5, 4 = >5): ");
+		scanf("%d", &(newMachine)->breakdownNum);
+
+		if ((newMachine)->breakdownNum > 0 && (newMachine)->breakdownNum < 5)
+			validInput = true;
+
+		else
+			printf("\nPlease enter a valid breakdown number.");
+	}
 
 	temp = top;
 
@@ -447,7 +567,6 @@ int addMachine(machineT* top, int pos)
 	newMachine->PREV = temp;
 	newMachine->NEXT = temp2;
 	temp2->PREV = newMachine;
-
 }
 
 //displayAll -> display all machine's details on screen
@@ -671,6 +790,8 @@ int updateMachine(machineT* top, int searchTerm)
 
 	temp = top;
 
+	bool validInput = false;
+
 
 	while (temp != NULL)
 	{
@@ -678,15 +799,30 @@ int updateMachine(machineT* top, int searchTerm)
 
 		if (temp->chassisNum == searchTerm)
 		{
+
 			//Allow updates for everything except chassis num (with checks)
+			validInput = false;
+
 			printf("\nEnter the new machinery make: ");
 			scanf("%s", (temp)->machineryMake);
 
 			printf("\nEnter the new machinery model: ");
 			scanf("%s", (temp)->machineryModel);
 
-			printf("\nEnter the new year of manufacture: ");
-			scanf("%d", &(temp)->year);
+			while (validInput == false)
+			{
+				printf("\nEnter the new year of manufacture: ");
+				scanf("%d", &(temp)->year);
+				if ((temp)->year >= 1950 && (temp)->year <= 2025)
+				{
+					validInput = true;
+				}
+
+				else
+				{
+					printf("\nInvalid year, please try again.");
+				}
+			}
 
 			printf("\nEnter the new cost: ");
 			scanf("%f", &(temp)->cost);
@@ -700,29 +836,131 @@ int updateMachine(machineT* top, int searchTerm)
 			printf("\nEnter the new next service mileage: ");
 			scanf("%f", &(temp)->nextServiceMile);
 
-			printf("\nEnter the new owner name: ");
-			scanf("%s", (temp)->owner);
+			validInput = false;
+			while (validInput == false)
+			{
+				printf("\nEnter the new owner name (no spaces): ");
+				scanf("%s", (temp)->owner);
 
-			printf("\nEnter the new owner email address: ");
-			scanf("%s", (temp)->email);
+				if (strstr((temp)->owner, " ") != NULL)
+					printf("\nInvalid input, please do not include spaces.");
 
-			printf("\nEnter the new owner phone number: ");
-			scanf("%d", &(temp)->phone);
+				else
+					validInput = true;
+			}
 
-			printf("\nEnter the new machine type: ");
-			scanf("%d", &(temp)->machineType);
+			validInput = false;
+			while (validInput == false)
+			{
+				printf("\nEnter the new owner email address: ");
+				scanf("%s", (temp)->email);
 
-			printf("\nEnter the new machine breakdowns this year (1 = never, 2 = <3, 3 = <5, 4 = >5): ");
-			scanf("%d", &(temp)->breakdownNum);
+				//https://stackoverflow.com/questions/15098936/simple-way-to-check-if-a-string-contains-another-string-in-c
+				if (strstr((temp)->email, "@") != NULL && strstr((temp)->email, ".com") != NULL)
+					validInput = true;
+
+				else
+					printf("\nInvalid input, please use @ and .com in the address");
+			}
+
+			validInput = false;
+			while (validInput == false)
+			{
+				printf("\nEnter the new owner phone number: ");
+				scanf("%d", &(temp)->phone);
+
+				if ((temp)->phone >= 1000000000 && (temp)->phone <= 9999999999)
+					validInput = true;
+
+				else
+					printf("\nPlease enter a valid phone number.");
+			}
+
+			validInput = false;
+			while (validInput == false)
+			{
+				printf("\nEnter the new machine type (1 = Tractor, 2 = Excavator, 3 = Roller, 4 = Crane, 5 = Mixer): ");
+				scanf("%d", &(temp)->machineType);
+
+				if ((temp)->machineType > 0 && (temp)->machineType < 6)
+					validInput = true;
+
+				else
+					printf("\nPlease enter a valid machine type.");
+			}
+
+			validInput = false;
+			while (validInput == false)
+			{
+				printf("\nEnter the new machine breakdowns this year (1 = never, 2 = <3, 3 = <5, 4 = >5): ");
+				scanf("%d", &(temp)->breakdownNum);
+
+				if ((temp)->breakdownNum > 0 && (temp)->breakdownNum < 5)
+					validInput = true;
+
+				else
+					printf("\nPlease enter a valid breakdown number.");
+			}
 
 			found = 1;
 			break;
 		}
 
 		temp = temp->NEXT;
-
 	}
-	//return found;
+
+	if (found != 1)
+		printf("\nMachine could not be found.\n");
+}
+
+//deleteTopMachine
+void deleteTopMachine(machineT** top, machineT** end)
+{
+	machineT* temp;
+
+	if (*top == NULL)
+	{
+		printf("Sorry the list is empty you can not delete from the list\n");
+	}
+	else if (*top == *end)
+	{
+		temp = *top;
+		*top = NULL;
+		*end = NULL;
+		free(temp);
+	}
+	else
+	{
+		temp = *top;
+		*top = temp->NEXT;
+		(*top)->PREV = NULL;
+		free(temp);
+	}
+}
+
+//deleteBottomMachine
+void deleteBottomMachine(machineT** top, machineT** end)
+{
+	machineT* temp;
+
+	if (*top == NULL)
+	{
+		printf("Sorry the list is empty you can not delete from the list\n");
+	}
+	else if (*top == *end)
+	{
+		temp = *top;
+		*top = NULL;
+		*end = NULL;
+		free(temp);
+	}
+	else
+	{
+		temp = *end;
+		*end = temp->PREV;
+		(*end)->NEXT = NULL;
+		free(temp);
+	}
 }
 
 //deleteMachine -> delete machine based on chassis num
