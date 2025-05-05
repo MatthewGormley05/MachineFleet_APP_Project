@@ -23,6 +23,13 @@ typedef struct machine
 	struct node* PREV;
 }machineT;
 
+//Acts as array within an array to list by 
+typedef struct valuation
+{
+	int chassisNum;
+	double currentValue;
+}valuationT;
+
 //Initialise psuedo-methods
 int userLogin();
 int displayOptions();
@@ -36,8 +43,6 @@ int displayStats(machineT* top, int machineType);
 void listAll(machineT* top);
 int displayMachine(machineT* top, int searchTerm);
 int updateMachine(machineT* top, int searchTerm);
-void deleteMachine(machineT** top, machineT** end, int searchTerm);
-void deleteTopMachine(machineT** top, machineT** end);
 void deleteMachine(machineT** top, machineT** end, int searchTerm);
 
 
@@ -132,6 +137,8 @@ void main()
 			{
 				printf("\nPlease enter the chassis number: ");
 				scanf("%d", &chassisInput);
+
+				displayMachine(headPtr, chassisInput);
 			}
 
 			//Option 4: Update a machine's details (ADMIN)
@@ -146,51 +153,53 @@ void main()
 			//Option 5: Delete machine
 			else if (option == 5)
 			{
-				printf("\nPlease enter the chassis number: ");
+				printf("\nPlease enter the chassis number of the machine you wish to delete: ");
 				scanf("%d", &chassisInput);
+
+				deleteMachine(&headPtr, &tailPtr, chassisInput);
 			}
 
 			//Option 6: Generate statistics (a - d) based on machinery type
 			else if (option == 6)
 			{
 				printf("\nPlease enter the machine you wish to see the statistics for:");
-				printf("(a) Tractor");
-				printf("(b) Excavator");
-				printf("(c) Roller");
-				printf("(d) Crane");
-				printf("(e) Mixer\n");
+				printf("\n(a) Tractor");
+				printf("\n(b) Excavator");
+				printf("\n(c) Roller");
+				printf("\n(d) Crane");
+				printf("\n(e) Mixer\n");
 				scanf("%s", machineOption);
 
 				//Tractor
-				if (strcmp(machineOption, a) == 0 || strcmp(machineOption, A) == 0)
+				if (strstr(machineOption, "a") != NULL || strstr(machineOption, "A") != NULL)
 				{
 					machineType = 1;
 					displayStats(headPtr, machineType);
 				}
 
 				//Excavator
-				else if (strcmp(machineOption, b) == 0 || strcmp(machineOption, B) == 0)
+				else if (strstr(machineOption, "b") != NULL || strstr(machineOption, "B") != NULL)
 				{
 					machineType = 2;
 					displayStats(headPtr, machineType);
 				}
 
 				//Roller
-				else if (strcmp(machineOption, c) == 0 || strcmp(machineOption, C) == 0)
+				else if (strstr(machineOption, "c") != NULL || strstr(machineOption, "C") != NULL)
 				{
 					machineType = 3;
 					displayStats(headPtr, machineType);
 				}
 
 				//Crane
-				else if (strcmp(machineOption, d) == 0 || strcmp(machineOption, D) == 0)
+				else if (strstr(machineOption, "d") != NULL || strstr(machineOption, "D") != NULL)
 				{
 					machineType = 4;
 					displayStats(headPtr, machineType);
 				}
 
 				//Mixer
-				else if (strcmp(machineOption, e) == 0 || strcmp(machineOption, E) == 0)
+				else if (strstr(machineOption, "e") != NULL || strstr(machineOption, "E") != NULL)
 				{
 					machineType = 5;
 					displayStats(headPtr, machineType);
@@ -642,12 +651,56 @@ int displayStats(machineT* top, int machineType)
 	while (temp != NULL)
 	{
 		//Loop that tracks machine num and failures of the selected type
+		//Tractors
+		if (machineType == 1 && temp->machineType == 1)
+		{
+			machineCount++;
+
+			if (temp->breakdownNum > 0)
+				machineFailures++;
+		}
+
+		//Excavators
+		else if (machineType == 2 && temp->machineType == 2)
+		{
+			machineCount++;
+
+			if (temp->breakdownNum > 0)
+				machineFailures++;
+		}
+
+		//Rollers
+		else if (machineType == 3 && temp->machineType == 2)
+		{
+			machineCount++;
+
+			if (temp->breakdownNum > 0)
+				machineFailures++;
+		}
+
+		//Cranes
+		else if (machineType == 4 && temp->machineType == 2)
+		{
+			machineCount++;
+
+			if (temp->breakdownNum > 0)
+				machineFailures++;
+		}
+
+		//Mixers
+		else if (machineType == 5 && temp->machineType == 2)
+		{
+			machineCount++;
+
+			if (temp->breakdownNum > 0)
+				machineFailures++;
+		}
 
 		temp = temp->NEXT;
 	}
 
 	int totalSuccesses = (machineCount - machineFailures);
-	float successesPercentage = (totalSuccesses / machineCount) * 100;
+	float successesPercentage = ((float)totalSuccesses / machineCount) * 100;
 
 	//Tractors
 	if (machineType == 1 && machineCount > 0)
@@ -685,9 +738,9 @@ int displayStats(machineT* top, int machineType)
 	}
 
 	//No machines
-	else if (machineCount <= 0)
+	else if (machineCount <= 0 || top==NULL)
 	{
-		printf("There are no machines of the selected type in the fleet.");
+		printf("\nThere are no machines of the selected type in the fleet.\n");
 	}
 }
 
@@ -695,20 +748,50 @@ int displayStats(machineT* top, int machineType)
 void listAll(machineT* top)
 {
 	machineT* temp;
+	int count = 0;
+	int i = 0;
+	double previousValuation = 0; //Not possible so you know it's the first
+	int previousChassis = 0; //Not possible so you know it's the first
 
 	temp = top;
 
-	//Create array of chassis num + valuation
+	//Count the number of machines
 	while (temp != NULL)
 	{
-		//printf("The value of the node is %d\n", temp->data);
-
+		count++;
 		temp = temp->NEXT;
 	}
 
-	//Sort array
+	temp = top;
 
-	//Print Array
+	//For loop that goes through the linked list as many times as needed
+	for (i = 0; i < count; i++)
+	{
+		temp = top;
+		while (temp != NULL)
+		{
+			//If it's equal to 0 then it's the first one in the loop
+
+
+			temp = temp->NEXT;
+		}
+		//Print the new result
+	}
+
+	/*Plan:
+	. Go through linked list and find highest value
+	. Print it
+	. Save that value to "previous highest"
+	. Save the chassis num as "previous chassis"
+
+	. Next loop do that again but making an extra check that it's lower than the previous highest and that the chassis nums are different
+	. Print it
+	. Save that value to "previous highest"
+	. Save that chassis num as "previous chassis"
+
+	. Rinse and repeat
+	. End if the current highest and previous highest of both are the same
+	*/
 
 }
 
@@ -911,70 +994,24 @@ int updateMachine(machineT* top, int searchTerm)
 
 	if (found != 1)
 		printf("\nMachine could not be found.\n");
-}
 
-//deleteTopMachine
-void deleteTopMachine(machineT** top, machineT** end)
-{
-	machineT* temp;
-
-	if (*top == NULL)
-	{
-		printf("Sorry the list is empty you can not delete from the list\n");
-	}
-	else if (*top == *end)
-	{
-		temp = *top;
-		*top = NULL;
-		*end = NULL;
-		free(temp);
-	}
 	else
-	{
-		temp = *top;
-		*top = temp->NEXT;
-		(*top)->PREV = NULL;
-		free(temp);
-	}
-}
-
-//deleteBottomMachine
-void deleteBottomMachine(machineT** top, machineT** end)
-{
-	machineT* temp;
-
-	if (*top == NULL)
-	{
-		printf("Sorry the list is empty you can not delete from the list\n");
-	}
-	else if (*top == *end)
-	{
-		temp = *top;
-		*top = NULL;
-		*end = NULL;
-		free(temp);
-	}
-	else
-	{
-		temp = *end;
-		*end = temp->PREV;
-		(*end)->NEXT = NULL;
-		free(temp);
-	}
+		printf("\nMachine has been updated.\n");
 }
 
 //deleteMachine -> delete machine based on chassis num
 void deleteMachine(machineT** top, machineT** end, int searchTerm)
 {
 	machineT* temp;
-	int count = 0;
+	machineT* closer;
 	int found = 0;
 
-
+	//Check if there's no machines
 	if (*top == NULL)
 	{
 		printf("Sorry the list is empty you can not delete from the list\n");
 	}
+	//Check if there's only one item in the list
 	else if (*top == *end)
 	{
 		temp = *top;
@@ -982,27 +1019,74 @@ void deleteMachine(machineT** top, machineT** end, int searchTerm)
 		*end = NULL;
 		free(temp);
 	}
-	else
+	//If head pointer is a match
+	else if ((*top)->chassisNum == searchTerm)
 	{
 		temp = *top;
 		*top = temp->NEXT;
 		(*top)->PREV = NULL;
 		free(temp);
 	}
+
+	//If the tail pointer is a match
+	else if ((*end)->chassisNum == searchTerm)
+	{
+		temp = *end;
+		*end = temp->PREV;
+		(*end)->NEXT = NULL;
+		free(temp);
+	}
+	
+	//Search for the specific term
+	else
+	{
+		//Loop through until found
+		temp = *top;
+
+		while (temp != NULL)
+		{
+
+			if (temp->chassisNum == searchTerm)
+			{
+				printf("\nMachine was found.");
+				closer = temp;
+				temp = closer->PREV;
+				temp->NEXT = closer->NEXT;
+				free(closer);
+
+				printf("\nMachine has been deleted...\n");
+
+				found = 1;
+				break;
+			}
+
+			temp = temp->NEXT;
+		}
+
+		if (found != 1)
+		{
+			printf("\nMachine could not be found\n");
+		}
+	}
 }
 
 /*
-//loadAll -> loads machine fleet from file using addMachine
+//loadAll -> loads machine fleet from file using addMachine, file is ordered by chassis num so no working needed
 void loadAll()
 {
-	//Do the same things as option 1
+	//use main method add machine as guide
 
-	//File is ordered by chassis num so no working needed
+	//Second line is head pointer -> PREV = null
+
+	//Load rest, have a check for the last one to make it the tail pointer
+
 }
 
 //saveAll -> prints all machines + all 5 performance stats to file
 void saveAll()
 {
+	//Save the 5 stats
+
 	//Save in order of chassis num using modified listAll
 
 }
