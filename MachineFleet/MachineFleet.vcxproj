@@ -131,13 +131,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="fleet.txt" />
+    <Text Include="fleetBackup.txt" />
     <Text Include="FleetStructure.txt" />
-    <Text Include="Lab1_DailySalesLoading_Solution.txt" />
-    <Text Include="Lab2_EmployeesDetails_Solution.txt" />
-    <Text Include="Lab3_AddEditBook_Solution.txt" />
-    <Text Include="Lab4_LoginLoad_Solution3.txt" />
-    <Text Include="Lab5_StartEndListLengthSearch_Solution.txt" />
-    <Text Include="Lab6.txt" />
     <Text Include="users.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

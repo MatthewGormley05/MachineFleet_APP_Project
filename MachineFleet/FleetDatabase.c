@@ -7,28 +7,22 @@
 typedef struct machine
 {
 	int chassisNum; //Unique
-	char machineryMake[20];
-	char machineryModel[20];
+	char machineryMake[50];
+	char machineryModel[50];
 	int year; //Must be 4 nums, 1950 - 2025
 	double cost;
 	double currentValue;
 	double currentMileage;
 	double nextServiceMile;
-	char owner[30];
-	char email[30];
+	char owner[50];
+	char email[50];
 	long phone;
 	int machineType; //1 = Tractor, 2 = Excavator, 3 = Roller, 4 = Crane, 5 = Mixer
 	int breakdownNum; //1 = never, 2 = <3, 3 = <5, 4 = >5
+
 	struct node* NEXT;
 	struct node* PREV;
 }machineT;
-
-//Acts as array within an array to list by 
-typedef struct valuation
-{
-	int chassisNum;
-	double currentValue;
-}valuationT;
 
 //Initialise psuedo-methods
 int userLogin();
@@ -44,6 +38,8 @@ void listAll(machineT* top);
 int displayMachine(machineT* top, int searchTerm);
 int updateMachine(machineT* top, int searchTerm);
 void deleteMachine(machineT** top, machineT** end, int searchTerm);
+void saveMachines(machineT* top);
+void loadMachines(machineT** end, machineT** top);
 
 
 void main()
@@ -58,12 +54,12 @@ void main()
 	char machineOption[1], a[1] = "a", b[1] = "b", c[1] = "c", d[1] = "d", e[1] = "e", A[1] = "A", B[1] = "B", C[1] = "C", D[1] = "D", E[1] = "E";
 	char emptyString = "\0";
 
-	//loadAll();//Load Files
-
 	loginMode = userLogin(); //-1 = Unsuccessful, 1 = Successful, 2 = Admin
 
 	if (loginMode == 1 || loginMode == 2)
 	{
+		loadMachines(&tailPtr, &headPtr);
+
 		option = displayOptions();
 
 		while (option != -1)
@@ -207,7 +203,7 @@ void main()
 			//Option 7: Print all machine details into a report
 			else if (option == 7)
 			{
-				//saveAll();
+				saveMachines(headPtr);
 			}
 
 			//Option 8: List all the machinery in order of current valuation
@@ -247,7 +243,7 @@ void main()
 		printf("\nExiting the program...\n");
 
 		//At end of loop run saveAll method
-		//saveAll();
+		saveMachines(headPtr);
 	}
 
 	else {
@@ -791,6 +787,8 @@ int displayAll(machineT* top)
 	{
 		count++;
 
+		printf("\n-----------------------------------------------------------------");
+
 		printf("\nMachine #%d", count);
 
 		printf("\nChassis Number: %d", temp->chassisNum);
@@ -837,6 +835,7 @@ int displayAll(machineT* top)
 
 		temp = temp->NEXT;
 	}
+	printf("\n-----------------------------------------------------------------");
 }
 
 //displayStats -> display statistics of chosen machine types based on user input
@@ -907,35 +906,35 @@ int displayStats(machineT* top, int machineType)
 	if (machineType == 1 && machineCount > 0)
 	{
 		printf("Generating statistics for Tractor Machinery...");
-		printf("There are %f of the %d Tractors in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
+		printf("\n%.2f Percent of the %d Tractors in the fleet have had no breakdowns.", successesPercentage, machineCount);
 	}
 
 	//Excavators
 	else if (machineType == 2 && machineCount > 0)
 	{
 		printf("Generating statistics for Excavator Machinery...");
-		printf("There are %f of the %d Excavators in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
+		printf("\n%.2f Percent of the %d Excavators in the fleet have had no breakdowns.", successesPercentage, machineCount);
 	}
 
 	//Rollers
 	else if (machineType == 3 && machineCount > 0)
 	{
 		printf("Generating statistics for Roller Machinery...");
-		printf("There are %f of the %d Rollers in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
+		printf("\n%.2f Percent of the %d Rollers in the fleet have had no breakdowns.", successesPercentage, machineCount);
 	}
 
 	//Cranes
 	else if (machineType == 4 && machineCount > 0)
 	{
 		printf("Generating statistics for Crane Machinery...");
-		printf("There are %f of the %d Cranes in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
+		printf("\n%.2f Percent of the %d Cranes in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
 	}
 
 	//Mixers
 	else if (machineType == 5 && machineCount > 0)
 	{
 		printf("Generating statistics for Mixer Machinery...");
-		printf("There are %f of the %d Mixers in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
+		printf("\n%.2f percent  of the %d Mixers in the fleet have had 0 breakdowns.", successesPercentage, machineCount);
 	}
 
 	//No machines
@@ -943,6 +942,9 @@ int displayStats(machineT* top, int machineType)
 	{
 		printf("\nThere are no machines of the selected type in the fleet.\n");
 	}
+
+	//For saving values to file
+	return successesPercentage;
 }
 
 //listAll -> list all machines in order of current valuation
@@ -969,9 +971,6 @@ void listAll(machineT* top)
 	//For loop that goes through the linked list as many times as needed
 	if (count > 0)
 	{
-		printf("Valuation:     ");
-		printf("Chassis Number: \n");
-
 		for (i = 0; i < count; i++)
 		{
 			curHighestVal = -1;
@@ -1005,10 +1004,10 @@ void listAll(machineT* top)
 			}
 
 			//Additional check then print results
-			if (previousHighestVal != -1)
+			if (curHighestVal != -1)
 			{
-				printf("%f", curHighestVal);
-				printf("%d\n", curHighestChassis);
+				printf("\nChassis Num: %d", curHighestChassis);
+				printf("  Valuation: %.2f", curHighestVal);
 
 				//Set new variables
 				previousChassis = curHighestChassis;
@@ -1028,21 +1027,6 @@ void listAll(machineT* top)
 	{
 		printf("\nNo machines in database");
 	}
-
-	/*Plan:
-	. Go through linked list and find highest value
-	. Print it
-	. Save that value to "previous highest"
-	. Save the chassis num as "previous chassis"
-
-	. Next loop do that again but making an extra check that it's lower than the previous highest and that the chassis nums are different
-	. Print it
-	. Save that value to "previous highest"
-	. Save that chassis num as "previous chassis"
-
-	. Rinse and repeat
-	. End if the current highest and previous highest of both are the same
-	*/
 }
 
 //(ADMIN) displayMachine -> displays details of specific machine using inputted Chassis Number
@@ -1071,13 +1055,13 @@ int displayMachine(machineT* top, int searchTerm)
 
 			printf("\nYear of Manufacture: %d", temp->year);
 
-			printf("\nCost: %f.2", temp->cost);
+			printf("\nCost: %.2f", temp->cost);
 
-			printf("\nCurrent Valuation: %f.2", temp->currentValue);
+			printf("\nCurrent Valuation: %.2f", temp->currentValue);
 
-			printf("\nCurrent Mileage: %f.2", temp->currentMileage);
+			printf("\nCurrent Mileage: %.2f", temp->currentMileage);
 
-			printf("\nNext Service Mileage: %f.2", temp->nextServiceMile);
+			printf("\nNext Service Mileage: %.2f", temp->nextServiceMile);
 
 			printf("\nOwner Name: %s", temp->owner);
 
@@ -1111,6 +1095,11 @@ int displayMachine(machineT* top, int searchTerm)
 		}
 
 		temp = temp->NEXT;
+	}
+
+	if (found != 1)
+	{
+		printf("\nMachine could not be found...\n");
 	}
 
 	return found;
@@ -1270,6 +1259,7 @@ void deleteMachine(machineT** top, machineT** end, int searchTerm)
 		*top = NULL;
 		*end = NULL;
 		free(temp);
+		printf("\nMachine has been deleted, fleet is now empty.\n");
 	}
 	//If head pointer is a match
 	else if ((*top)->chassisNum == searchTerm)
@@ -1278,6 +1268,7 @@ void deleteMachine(machineT** top, machineT** end, int searchTerm)
 		*top = temp->NEXT;
 		(*top)->PREV = NULL;
 		free(temp);
+		printf("\nMachine has been deleted, first item in list has been replaced.\n");
 	}
 
 	//If the tail pointer is a match
@@ -1287,6 +1278,7 @@ void deleteMachine(machineT** top, machineT** end, int searchTerm)
 		*end = temp->PREV;
 		(*end)->NEXT = NULL;
 		free(temp);
+		printf("\nMachine has been deleted, last item in list has been replaced.\n");
 	}
 	
 	//Search for the specific term
@@ -1322,24 +1314,141 @@ void deleteMachine(machineT** top, machineT** end, int searchTerm)
 	}
 }
 
-/*
 //loadAll -> loads machine fleet from file using addMachine, file is ordered by chassis num so no working needed
-void loadAll()
+void loadMachines(machineT **end, machineT **top)
 {
-	//use main method add machine as guide
+	//Use addMachine as guide
+	printf("\nLoading Machine Fleet.....\n");
 
-	//Second line is head pointer -> PREV = null
+	FILE* fp;
+	machineT* temp = NULL;
+	machineT* newMachine;
+	int inputs;
+	
+	fp = fopen("fleet.txt", "r");
 
-	//Load rest, have a check for the last one to make it the tail pointer
+	if (fp != NULL)
+	{
+		printf("\nLoading files from fleet.txt...\n");
 
+		//Until file has ended
+		while (!feof(fp))
+		{
+			//Set new node
+			newMachine = (machineT*)malloc(sizeof(machineT));
+
+			inputs = fscanf(fp, "%d %s %s %d %lf %lf %lf %lf %s %s %ld %d %d",
+				&newMachine->chassisNum, newMachine->machineryMake, newMachine->machineryModel, &newMachine->year, &newMachine->cost, &newMachine->currentValue,
+				&newMachine->currentMileage, &newMachine->nextServiceMile, newMachine->owner, newMachine->email, &newMachine->phone, &newMachine->machineType, &newMachine->breakdownNum);
+
+			/*
+			printf("\n%d\n", inputs);
+			printf("%d %s %s %d %.2f %.2f %.2f %.2f %s %s %ld %d %d\n",
+				newMachine->chassisNum, newMachine->machineryMake, newMachine->machineryModel, newMachine->year, newMachine->cost, newMachine->currentValue,
+				newMachine->currentMileage, newMachine->nextServiceMile, newMachine->owner, newMachine->email, newMachine->phone, newMachine->machineType, newMachine->breakdownNum);
+				*/
+
+
+			if (inputs == 13)
+			{
+				//If it's the head pointer
+				if (*top == NULL)
+				{
+					printf("\nAdding first machine....\n");
+
+					//Set head pointer stuff
+					newMachine->PREV = NULL;
+					newMachine->NEXT = NULL;
+					*top = newMachine;
+					*end = newMachine;
+
+					//Set temp as new machine to solidify it
+					temp = newMachine;
+					printf("First machine added.\n");
+				}
+				//Add node at end of linked list
+				else
+				{
+					printf("\nAdding machine......");
+
+					//Set up points
+					temp->NEXT = newMachine;
+					newMachine->PREV = temp;
+					newMachine->NEXT = NULL;
+
+					//Set it as last machine
+					*end = newMachine;
+					temp = *end;
+
+					printf("\nMachine has been added.\n");
+				}
+			}
+
+			else {
+				printf("\nMachines have all been added\n");
+				free(newMachine);
+				break;
+			}
+
+
+
+		}//End of While
+
+		fclose(fp);
+	}
+
+	else
+		printf("\nFile could not be loaded...\n");
 }
 
 //saveAll -> prints all machines + all 5 performance stats to file
-void saveAll()
+void saveMachines(machineT *top)
 {
-	//Save the 5 stats
+	FILE* fp;
+	float tractorPercentage, excavatorPercentage, rollerPercentage, cranePercentage, mixerPercentage;
+	machineT* temp;
+	temp = top;
 
-	//Save in order of chassis num using modified listAll
+	if (temp != NULL)
+	{
+		printf("\nSaving Machine Fleet.....\n");
 
+		fp = fopen("fleet.txt", "w");
+
+		if (fp == NULL)
+		{
+			printf("\nError, could not open file.");
+		}
+
+		else
+		{
+			while (temp != NULL)
+			{
+				fprintf(fp, "%d %s %s %d %.2f %.2f %.2f %.2f %s %s %ld %d %d\n",
+					temp->chassisNum, temp->machineryMake, temp->machineryModel, temp->year, temp->cost, temp->currentValue,
+					temp->currentMileage, temp->nextServiceMile, temp->owner, temp->email, temp->phone, temp->machineType, temp->breakdownNum);
+
+				temp = temp->NEXT;
+			}
+
+
+			//Save 5 stats
+			printf("\nSaving machine stats...\n");
+			tractorPercentage = displayStats(top, 1);
+			excavatorPercentage = displayStats(top, 2);
+			rollerPercentage = displayStats(top, 3);
+			cranePercentage = displayStats(top, 4);
+			mixerPercentage = displayStats(top, 5);
+
+			fprintf(fp, "%.2f %.2f %.2f %.2f %.2f", tractorPercentage, excavatorPercentage, rollerPercentage, cranePercentage, mixerPercentage);
+			fclose(fp);
+
+			printf("\nMachine Fleet has been saved to file!\n");
+		}
+	}
+
+	else
+	{
+		printf("\nDatabase is empty, not saving to file...\n");
+	}
 }
-*/
