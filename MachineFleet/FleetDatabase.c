@@ -899,8 +899,8 @@ int displayStats(machineT* top, int machineType)
 		temp = temp->NEXT;
 	}
 
-	int totalSuccesses = (machineCount - machineFailures);
-	float successesPercentage = ((float)totalSuccesses / machineCount) * 100;
+	int totalSuccesses = ((machineCount*100) - (machineFailures*100));
+	float successesPercentage = ((float)totalSuccesses / machineCount);
 
 	//Tractors
 	if (machineType == 1 && machineCount > 0)
